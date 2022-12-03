@@ -19,8 +19,14 @@ def _add(names, synopsis, options):
     name = names[0]
     # hack: fake a source man page (this breaks the outgoing links from
     # explainshell, oh well)
-    names.append('bash-%s' % name)
-    BUILTINS[name] = sm('bash-%s.1.gz' % name, name, synopsis, options, [(name, 20) for name in names])
+    names.append(f'bash-{name}')
+    BUILTINS[name] = sm(
+        f'bash-{name}.1.gz',
+        name,
+        synopsis,
+        options,
+        [(name, 20) for name in names],
+    )
 
 _add([':'], 'the command does nothing', [so(sp(0, '''No  effect;  the command does nothing beyond expanding arguments and performing any specified redirections.  A zero
 exit code  is returned.''', '', True), [], [], False, True, False)])

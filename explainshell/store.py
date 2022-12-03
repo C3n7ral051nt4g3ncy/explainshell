@@ -10,8 +10,9 @@ class classifiermanpage(collections.namedtuple('classifiermanpage', 'name paragr
     or not'''
     @staticmethod
     def from_store(d):
-        m = classifiermanpage(d['name'], [paragraph.from_store(p) for p in d['paragraphs']])
-        return m
+        return classifiermanpage(
+            d['name'], [paragraph.from_store(p) for p in d['paragraphs']]
+        )
 
     def to_store(self):
         return {'name' : self.name,
@@ -33,8 +34,9 @@ class paragraph(object):
 
     @staticmethod
     def from_store(d):
-        p = paragraph(d.get('idx', 0), d['text'].encode('utf8'), d['section'], d['is_option'])
-        return p
+        return paragraph(
+            d.get('idx', 0), d['text'].encode('utf8'), d['section'], d['is_option']
+        )
 
     def to_store(self):
         return {'idx' : self.idx, 'text' : self.text, 'section' : self.section,
@@ -46,9 +48,7 @@ class paragraph(object):
         return '<paragraph %d, %s: %r>' % (self.idx, self.section, t)
 
     def __eq__(self, other):
-        if not other:
-            return False
-        return self.__dict__ == other.__dict__
+        return self.__dict__ == other.__dict__ if other else False
 
 class option(paragraph):
     '''a paragraph that contains extracted options
@@ -92,7 +92,7 @@ class option(paragraph):
         return d
 
     def __str__(self):
-        return '(%s)' % ', '.join([str(x) for x in self.opts])
+        return f"({', '.join([str(x) for x in self.opts])})"
 
     def __repr__(self):
         return '<options for paragraph %d: %s>' % (self.idx, str(self))
@@ -138,7 +138,7 @@ class manpage(object):
     @property
     def namesection(self):
         name, section = util.namesection(self.source[:-3])
-        return '%s(%s)' % (name, section)
+        return f'{name}({section})'
 
     @property
     def section(self):
@@ -166,7 +166,7 @@ class manpage(object):
 
     @property
     def synopsisnoname(self):
-        return re.match(r'[\w|-]+ - (.*)$', self.synopsis).group(1)
+        return re.match(r'[\w|-]+ - (.*)$', self.synopsis)[1]
 
     def find_option(self, flag):
         for option in self.options:
@@ -191,11 +191,7 @@ class manpage(object):
             paragraphs.append(pp)
 
         synopsis = d['synopsis']
-        if synopsis:
-            synopsis = synopsis.encode('utf8')
-        else:
-            synopsis = helpconstants.NOSYNOPSIS
-
+        synopsis = synopsis.encode('utf8') if synopsis else helpconstants.NOSYNOPSIS
         return manpage(d['source'], d['name'], synopsis, paragraphs,
                        [tuple(x) for x in d['aliases']], d['partialmatch'],
                        d['multicommand'], d['updated'], d.get('nestedcommand'))
@@ -307,7 +303,7 @@ class store(object):
         existing is a list of (oid, man page) of suggestions that were
         already discovered
         '''
-        skip = set([oid for oid, m in existing])
+        skip = {oid for oid, m in existing}
         cursor = self.mapping.find({'dst' : oid})
         # find all srcs that point to oid
         srcs = [d['src'] for d in cursor]
@@ -331,8 +327,7 @@ class store(object):
 
         each man page may have aliases besides the name determined by its
         basename'''
-        d = self.manpage.find_one({'source' : m.source})
-        if d:
+        if d := self.manpage.find_one({'source': m.source}):
             logger.info('removing old manpage %s (%s)', m.source, d['_id'])
             self.manpage.remove(d['_id'])
 
@@ -368,8 +363,8 @@ class store(object):
     def verify(self):
         # check that everything in manpage is reachable
         mappings = list(self.mapping.find())
-        reachable = set([m['dst'] for m in mappings])
-        manpages = set([m['_id'] for m in self.manpage.find(fields={'_id':1})])
+        reachable = {m['dst'] for m in mappings}
+        manpages = {m['_id'] for m in self.manpage.find(fields={'_id':1})}
 
         ok = True
         unreachable = manpages - reachable

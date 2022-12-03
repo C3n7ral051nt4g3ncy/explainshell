@@ -7,12 +7,8 @@ class test_manager(unittest.TestCase):
         store.store('explainshell_tests').drop(True)
 
     def _getmanager(self, names, **kwargs):
-        l = []
-        for n in names:
-            l.append(os.path.join(config.MANPAGEDIR, '1', n))
-
-        m = manager.manager(config.MONGO_URI, 'explainshell_tests', l, **kwargs)
-        return m
+        l = [os.path.join(config.MANPAGEDIR, '1', n) for n in names]
+        return manager.manager(config.MONGO_URI, 'explainshell_tests', l, **kwargs)
 
     def test(self):
         m = self._getmanager(['tar.1.gz'])

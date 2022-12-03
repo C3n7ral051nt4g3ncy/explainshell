@@ -10,15 +10,17 @@ from explainshell import algo, config
 logger = logging.getLogger(__name__)
 
 def get_features(paragraph):
-    features = {}
     ptext = paragraph.cleantext()
     assert ptext
 
-    features['starts_with_hyphen'] = algo.features.starts_with_hyphen(ptext)
+    features = {'starts_with_hyphen': algo.features.starts_with_hyphen(ptext)}
     features['is_indented'] = algo.features.is_indented(ptext)
     features['par_length'] = algo.features.par_length(ptext)
     for w in ('=', '--', '[', '|', ','):
-        features['first_line_contains_%s' % w] = algo.features.first_line_contains(ptext, w)
+        features[
+            f'first_line_contains_{w}'
+        ] = algo.features.first_line_contains(ptext, w)
+
     features['first_line_length'] = algo.features.first_line_length(ptext)
     features['first_line_word_count'] = algo.features.first_line_word_count(ptext)
     features['is_good_section'] = algo.features.is_good_section(paragraph)
@@ -102,10 +104,7 @@ class classifier(object):
             option = guess.max()
             certainty = guess.prob(option)
 
-            if option:
-                if certainty < config.CLASSIFIER_CUTOFF:
-                    pass
-                else:
-                    logger.info('classified %s (%f) as an option paragraph', item, certainty)
-                    item.is_option = True
-                    yield certainty, item
+            if option and certainty >= config.CLASSIFIER_CUTOFF:
+                logger.info('classified %s (%f) as an option paragraph', item, certainty)
+                item.is_option = True
+                yield certainty, item

@@ -26,16 +26,19 @@ class mockstore(object):
                     sm('dup.2.gz', 'dup', 'dup2 synopsis', opts, [])]
 
         opts = list(opts)
-        opts.append(so(p4, [], [], False, 'FILE'))
-        opts.append(so(p5, ['-exec'], [], True, nestedcommand=['EOF', ';']))
+        opts.extend(
+            (
+                so(p4, [], [], False, 'FILE'),
+                so(p5, ['-exec'], [], True, nestedcommand=['EOF', ';']),
+            )
+        )
+
         self.manpages['withargs'] = sm('withargs.1.gz', 'withargs', 'withargs synopsis',
                                        opts, [], partialmatch=True, nestedcommand=True)
 
     def findmanpage(self, x, section=None):
         try:
-            if x == 'dup':
-                return self.dup
-            return [self.manpages[x]]
+            return self.dup if x == 'dup' else [self.manpages[x]]
         except KeyError:
             raise errors.ProgramDoesNotExist(x)
 

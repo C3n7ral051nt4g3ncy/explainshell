@@ -112,7 +112,7 @@ class leadingspaceremover(basefixer):
     by the amount of spaces in the first line'''
 
     def post_option_extraction(self):
-        for i, p in enumerate(self.mctx.manpage.options):
+        for p in self.mctx.manpage.options:
             text = self._removewhitespace(p.text)
             p.text = text
 
@@ -199,8 +199,6 @@ def _parents(fixercls):
     if last and p:
         raise ValueError("%s can't be last and also run before someone else" % fixercls.__name__)
 
-    if last:
-        return [f for f in fixerscls if f is not fixercls]
-    return p
+    return [f for f in fixerscls if f is not fixercls] if last else p
 
 fixerscls = util.toposorted(fixerscls, _parents)

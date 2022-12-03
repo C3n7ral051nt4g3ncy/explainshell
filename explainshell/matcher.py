@@ -176,17 +176,15 @@ class matcher(bashlex.ast.nodevisitor):
                 # maybe it's a redirect...
                 if part.kind != 'word':
                     self.visit(part)
-                else:
-                    # this is an argument to the function
-                    if part is not wordnode:
-                        mr = matchresult(part.pos[0], part.pos[1],
-                                         helpconstants._functionarg % wordnode.word,
-                                         None)
-                        self.matches.append(mr)
+                elif part is not wordnode:
+                    mr = matchresult(part.pos[0], part.pos[1],
+                                     helpconstants._functionarg % wordnode.word,
+                                     None)
+                    self.matches.append(mr)
 
-                        # visit any expansions in there
-                        for ppart in part.parts:
-                            self.visit(ppart)
+                    # visit any expansions in there
+                    for ppart in part.parts:
+                        self.visit(ppart)
 
             # we're done with this commandnode, don't visit its children
             return False
@@ -345,7 +343,7 @@ class matcher(bashlex.ast.nodevisitor):
         def attemptfuzzy(chars):
             m = []
             if chars[0] == '-':
-                tokens = [chars[0:2]] + list(chars[2:])
+                tokens = [chars[:2]] + list(chars[2:])
                 considerarg = True
             else:
                 tokens = list(chars)
@@ -354,7 +352,7 @@ class matcher(bashlex.ast.nodevisitor):
             pos = node.pos[0]
             prevoption = None
             for i, t in enumerate(tokens):
-                op = t if t[0] == '-' else '-' + t
+                op = t if t[0] == '-' else f'-{t}'
                 option = self.find_option(op)
                 if option:
                     if considerarg and not m and option.expectsarg:
@@ -528,8 +526,9 @@ class matcher(bashlex.ast.nodevisitor):
         except ValueError:
             kind = helpconstants.parameters.get(value, 'param')
 
-        self.expansions.append(matchwordexpansion(node.pos[0], node.pos[1],
-                                                  'parameter-%s' % kind))
+        self.expansions.append(
+            matchwordexpansion(node.pos[0], node.pos[1], f'parameter-{kind}')
+        )
 
     def match(self):
         logger.info('matching string %r', self.s)
@@ -614,12 +613,12 @@ class matcher(bashlex.ast.nodevisitor):
     def _resultindex(self):
         '''return a mapping of matchresults to their index among all
         matches, sorted by the start position of the matchresult'''
-        d = {}
-        i = 0
-        for result in sorted(self.allmatches, key=lambda mr: mr.start):
-            d[result] = i
-            i += 1
-        return d
+        return {
+            result: i
+            for i, result in enumerate(
+                sorted(self.allmatches, key=lambda mr: mr.start)
+            )
+        }
 
     def _mergeadjacent(self, matches):
         merged = []
