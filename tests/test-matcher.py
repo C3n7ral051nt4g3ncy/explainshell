@@ -604,7 +604,7 @@ class test_matcher(unittest.TestCase):
         self.assertEquals(groups[0].results, shellresults)
         self.assertEquals(groups[1].results, matchresults)
 
-        self.assertEquals(m.functions, set(['a']))
+        self.assertEquals(m.functions, {'a'})
 
     def test_comment(self):
         cmd = 'bar # a comment'

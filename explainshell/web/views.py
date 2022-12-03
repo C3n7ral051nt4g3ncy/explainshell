@@ -91,8 +91,7 @@ def explainprogram(program, store):
 
     suggestions = []
     for othermp in mps:
-        d = {'text' : othermp.namesection,
-             'link' : '%s/%s' % (othermp.section, othermp.name)}
+        d = {'text': othermp.namesection, 'link': f'{othermp.section}/{othermp.name}'}
         suggestions.append(d)
     logger.info('suggestions: %s', suggestions)
     return mp, suggestions
@@ -194,14 +193,9 @@ def formatmatch(d, m, expansions):
     '''populate the match field in d by escaping m.match and generating
     links to any command/process substitutions'''
 
-    # save us some work later: do any expansions overlap
-    # the current match?
-    hassubsinmatch = False
-
-    for start, end, kind in expansions:
-        if m.start <= start and end <= m.end:
-            hassubsinmatch = True
-            break
+    hassubsinmatch = any(
+        m.start <= start and end <= m.end for start, end, kind in expansions
+    )
 
     # if not, just escape the current match
     if not hassubsinmatch:

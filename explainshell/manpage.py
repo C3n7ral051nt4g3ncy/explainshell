@@ -41,10 +41,7 @@ def bold(l):
     >>> bold('<b>first</b> <b>second:</b>')
     (['first', 'second:'], [])
     '''
-    inside = []
-    for m in _section.finditer(l):
-        inside.append(m.span(0))
-
+    inside = [m.span(0) for m in _section.finditer(l)]
     current = 0
     outside = []
     for start, end in inside:
@@ -92,7 +89,7 @@ for searchfor, replacewith, underline in _replacementsprefix:
         x = list(replacewith)
         x.insert(1, '</u>')
         x = ''.join(x)
-        _replacements.append((x, '%s</u>' % replacewith))
+        _replacements.append((x, f'{replacewith}</u>'))
 
 _replacementsnoprefix = ['\xc2\xb7', # bullet
         '\xc2\xb4', # apostrophe
@@ -110,7 +107,7 @@ for s in _replacementsnoprefix:
     x = list(s)
     x.insert(1, '</u>')
     x = ''.join(x)
-    _replacements.append((x, '%s</u>' % s))
+    _replacements.append((x, f'{s}</u>'))
 
 _href = re.compile(r'<a href="file:///[^\?]*\?([^\(]*)\(([^\)]*)\)">')
 _section = re.compile(r'<b>([^<]+)</b>')
@@ -172,7 +169,7 @@ class manpage(object):
         self.path = path
         self.shortpath = os.path.basename(self.path)
         self.name = extractname(self.path)
-        self.aliases = set([self.name])
+        self.aliases = {self.name}
         self.synopsis = None
         self.paragraphs = None
         self._text = None

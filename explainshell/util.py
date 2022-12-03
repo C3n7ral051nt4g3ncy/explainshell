@@ -115,12 +115,10 @@ class peekable(object):
         except StopIteration:
             return False
     def peek(self):
-        if self._peeked:
-            return self._peekvalue
-        else:
+        if not self._peeked:
             self._peekvalue = self.it.next()
             self._peeked = True
-            return self._peekvalue
+        return self._peekvalue
     @property
     def index(self):
         '''return the index of the next item returned by next()'''

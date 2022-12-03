@@ -15,11 +15,8 @@ def debug():
         synopsis = ''
         if mp.synopsis:
             synopsis = mp.synopsis[:20]
-        dd = {'name' : mp.name, 'synopsis' : synopsis}
-        l = []
-        for o in mp.options:
-            l.append(str(o))
-        dd['options'] = ', '.join(l)
+        l = [str(o) for o in mp.options]
+        dd = {'name': mp.name, 'synopsis': synopsis, 'options': ', '.join(l)}
         d['manpages'].append(dd)
     d['manpages'].sort(key=lambda d: d['name'].lower())
     return render_template('debug.html', d=d)
@@ -64,12 +61,8 @@ def tag(source):
                 p = store.option(p, short, long, expectsarg, argument, nestedcommand)
             mparagraphs.append(p)
 
-        if request.form.get('nestedcommand', '').lower() == 'true':
-            m.nestedcommand = True
-        else:
-            m.nestedcommand = False
-        m = mngr.edit(m, mparagraphs)
-        if m:
+        m.nestedcommand = request.form.get('nestedcommand', '').lower() == 'true'
+        if m := mngr.edit(m, mparagraphs):
             return redirect(url_for('explain', cmd=m.name))
         else:
             abort(503)

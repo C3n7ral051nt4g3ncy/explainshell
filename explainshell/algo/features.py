@@ -13,11 +13,7 @@ def extract_first_line(paragraph):
     '''
     lines = paragraph.splitlines()
     first = lines[0].strip()
-    spaces = list(re.finditer(r'(\s+)', first))
-    # handle options that have their description in the first line by trying
-    # to treat it as two lines (looking at spaces between option and the rest
-    # of the text)
-    if spaces:
+    if spaces := list(re.finditer(r'(\s+)', first)):
         longest = max(spaces, key=lambda m: m.span()[1] - m.span()[0])
         if longest and longest.start() > 1 and longest.end() - longest.start() > 1:
             first = first[:longest.start()]
@@ -50,11 +46,7 @@ def is_good_section(paragraph):
     if not paragraph.section:
         return False
     s = paragraph.section.lower()
-    if 'options' in s:
-        return True
-    if s in ('description', 'function letters'):
-        return True
-    return False
+    return True if 'options' in s else s in ('description', 'function letters')
 
 def word_count(text):
     return round(len(re.findall(r'\w+', text)), -1)
